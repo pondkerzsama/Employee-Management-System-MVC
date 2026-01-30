@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using EmployeeSystem.Models;
-using EmployeeSystem;
+using EmployeeSystem.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
