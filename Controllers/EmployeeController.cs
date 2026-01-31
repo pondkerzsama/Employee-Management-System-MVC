@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using EmployeeSystem.Models;
 using System.Collections.Generic;
 using EmployeeSystem.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace EmployeeSystem.Controllers
 {
@@ -17,14 +18,6 @@ namespace EmployeeSystem.Controllers
             _context = context;
         }
 
-        public IActionResult Index()
-        {
-            // สั่งล่าม: "ไปเอา Employees ทั้งหมดมาแปลงเป็น List ให้หน่อย"
-            var allEmployees = _context.Employees.ToList();
-            
-            return View(allEmployees);
-        }
-
         // 4. หน้ากรอกข้อมูล (Create - GET): รอรับข้อมูล
         public IActionResult Create()
         {
@@ -33,6 +26,7 @@ namespace EmployeeSystem.Controllers
 
         // 5. รับข้อมูลจากฟอร์ม (Create - POST): รับค่าที่ User กรอกแล้วบันทึก
         [HttpPost] // (สำหรับรับข้อมูลมาแสดงผล)
+        [ValidateAntiForgeryToken]
         public IActionResult Create(Employee employee)
         {
             // เช็กว่าข้อมูลถูกต้องไหม (เทียบจาก model)
@@ -72,15 +66,65 @@ namespace EmployeeSystem.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public IActionResult Edit(Employee employee)
         {
             if(ModelState.IsValid)
             {
                 _context.Employees.Update(employee);
                 _context.SaveChanges();
+
                 return RedirectToAction("Index");
             }
             return View(employee);
         }
+
+        public IActionResult Delete(int? id)
+        {
+            if (id == null || id == 0 )
+            {
+                return NotFound();
+            }
+
+            var employee = _context.Employees.Find(id);
+
+            if (employee == null)
+            {
+                return NotFound();
+            }
+
+            return View(employee);
+        }
+
+        // สังเกต Attribute [ActionName("Delete")] นะครับ 
+        // เพราะใน C# เราตั้งชื่อฟังก์ชันซ้ำกันเป๊ะๆ (Delete รับ int เหมือนกัน) ไม่ได้ 
+        // เราเลยต้องตั้งชื่อในโค้ดว่า DeleteConfirmed แต่หลอกหน้าเว็บว่าชื่อ "Delete"
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public IActionResult DeleteConfirmed(int id)
+        {
+            var employee = _context.Employees.Find(id);
+            if (employee != null)
+            {
+                _context.Employees.Remove(employee);
+                _context.SaveChanges();
+            }
+            
+            return RedirectToAction("Index");
+        }
+
+        public async Task<IActionResult> Index(string searchString)
+        {   
+            var employees = from e in _context.Employees
+                            select e;
+            
+            if(!String.IsNullOrEmpty(searchString))
+            {
+                employees = employees.Where(s => s.FirstName.Contains(searchString));   
+            }
+
+            return View(await employees.ToListAsync());
+        }
+
     }
 }

@@ -10,6 +10,14 @@
         <a asp-action="Create" class="btn btn-primary">+ เพิ่มพนักงาน</a>
     </div>
 
+    <form asp-action="Index" method="get">
+        <div class="input-group mb-3">
+            <input type="text" name="searchString" class="form-control" placeholder="ค้นหาชื่อ...(กรอกเฉพาะชื่อ (ไม่ต้องใส่นามสกุล))" />
+            <button class="btn btn-primary" type="submit">Search</button>
+            <a asp-action="Index" class="btn btn-secondary">Reset</a>
+        </div>
+    </form>
+
     <table class="table table-bordered table-striped">
         <thead class="table-dark">
             <tr>
@@ -29,8 +37,9 @@
                     <td>@item.Salary.ToString("N2")</td>
                     <td>@item.DeptID</td>
                     <td>
+                        <!-- ต้องส่ง ID ไปด้วยเดี๋ยวลบไม่ได้ไม่เชื่อดูใน controller --> 
                         <a asp-action="Edit" asp-route-id="@item.EmployeeID" class="btn btn-warning btn-sm">Edit</a>
-                        <a href="#" class="btn btn-sm btn-danger">Delete</a>
+                        <a asp-action="Delete" asp-route-id="@item.EmployeeID" class="btn btn-danger btn-sm">Delete</a>
                     </td>
                 </tr>
             }
